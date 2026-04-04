@@ -5,7 +5,10 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import confusion_matrix
+
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 df = pd.read_csv("Telco-Customer-Churn.csv")
 
@@ -73,4 +76,9 @@ print(importance.head(10))
 
 importance.head(10).plot(kind='barh')
 plt.title("Top 10 Important Features")
+plt.show()
+
+cm = confusion_matrix(y_test, y_pred)
+sns.heatmap(cm, annot=True, fmt='d')
+plt.title("Confusion Matrix")
 plt.show()
