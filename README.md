@@ -14,9 +14,19 @@ Predict whether a customer will churn (leave) or not.
 - Model Training (Logistic Regression, Random Forest)
 
 ## 📊 Results
+
+### 🔹 Model Performance
+![Results](images/results.png)
+
 - Logistic Regression Accuracy: ~78%
 - Random Forest Accuracy: ~78%
 
+---
+
+### 🔹 Feature Importance
+![Feature Importance](images/feature_importance.png)
+
 ## 🔍 Key Insights
-- Contract type and tenure are major factors affecting churn
-- Customers with higher monthly charges are more likely to churn
+- Customers with higher total and monthly charges are more likely to churn
+- Longer tenure reduces churn probability
+- Contract type significantly impacts customer retention
