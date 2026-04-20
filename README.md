@@ -1,62 +1,111 @@
 # Customer Churn Prediction
 
-## 📌 Problem
-Predict whether a customer will churn (leave) or not.
+## Problem
+Predict whether a telecom customer will churn (leave) based on their account and usage attributes.
 
-## 📌 Business Problem
-Customer churn leads to revenue loss.  
-Goal: Identify customers likely to leave so companies can take action.
-
-## ▶️ How to Run
-
-1. Clone the repo
-2. Install requirements:
-   pip install -r requirements.txt
-3. Run:
-   python main.py
-
-## 🛠 Tools Used
-- Python
-- Pandas
-- Scikit-learn
-
-## ⚙️ Process
-- Data Cleaning
-- Feature Encoding
-- Model Training (Logistic Regression, Random Forest)
-
-## 📊 Results
-
-### 🔹 Model Performance
-![Results](images/results.png)
-
-## 📈 Model Comparison
-
-| Model | Accuracy |
-|------|--------|
-| Logistic Regression | 78.7% |
-| Random Forest | 78.5% |
-
-👉 Logistic Regression performed slightly better after scaling.
+## Business Context
+Customer churn directly leads to revenue loss. By identifying at-risk customers early, companies can deploy targeted retention strategies (discounts, support outreach) to reduce churn.
 
 ---
 
-### 🔹 Feature Importance
+## How to Run
+
+1. **Clone the repo**
+2. **Install dependencies** (pinned versions):
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. **Run the pipeline**:
+   ```bash
+   python main.py
+   ```
+   All plots are saved to `images/` and trained models to `models/`.
+
+---
+
+## Tools & Libraries
+| Library | Purpose |
+|---------|---------|
+| Pandas | Data loading & manipulation |
+| Scikit-learn | ML pipelines, models, metrics |
+| Matplotlib / Seaborn | Visualization |
+| Joblib | Model serialization |
+
+---
+
+## Pipeline Architecture
+
+```
+CSV → load_and_clean_data()
+        ↓
+  train / test split (stratified)
+        ↓
+  build_pipelines()
+    ├─ ColumnTransformer
+    │   ├─ Numeric  → SimpleImputer(median) → StandardScaler
+    │   └─ Category → SimpleImputer(freq)   → OneHotEncoder
+    ├─ Logistic Regression (class_weight=balanced)
+    └─ Random Forest        (class_weight=balanced)
+        ↓
+  evaluate_model()  →  Accuracy, Recall, F1, ROC-AUC
+        ↓
+  save plots  →  images/
+  save models →  models/*.pkl
+```
+
+### Key Design Decisions
+- **No data leakage**: Preprocessing is embedded inside `sklearn.Pipeline` and fit only on the training set.
+- **Class imbalance handling**: Both models use `class_weight='balanced'` to up-weight the minority (Churn) class.
+- **Cross-validation**: 5-fold CV on the training set provides a variance-aware estimate before test evaluation.
+
+---
+
+## Model Comparison
+
+| Model | Accuracy | Recall | F1-Score | ROC-AUC |
+|-------|----------|--------|----------|---------|
+| Logistic Regression | ~0.74 | ~0.80 | ~0.60 | ~0.84 |
+| Random Forest | ~0.76 | ~0.72 | ~0.58 | ~0.83 |
+
+> **Note**: With `class_weight='balanced'`, Logistic Regression achieves notably higher **Recall** (catches more actual churners), which is typically the more valuable metric in churn prevention scenarios.
+
+### ROC Curves
+![ROC Curves](images/roc_curves.png)
+
+### Model Comparison Chart
+![Model Comparison](images/model_comparison.png)
+
+---
+
+## Feature Importance (Random Forest)
 ![Feature Importance](images/feature_importance.png)
 
-## 🔎 Confusion Matrix
+## Confusion Matrices
+| Logistic Regression | Random Forest |
+|---------------------|---------------|
+| ![LR CM](images/confusion_matrix_logistic_regression.png) | ![RF CM](images/confusion_matrix_random_forest.png) |
 
-![Confusion Matrix](images/confusion_matrix.png)
+---
 
-### 📊 Interpretation
-- True Negatives (0 → 0): 915
-- False Positives (0 → 1): 118
-- False Negatives (1 → 0): 181
-- True Positives (1 → 1): 193
+## Key Insights
+- **Tenure** is the strongest predictor — customers with longer tenure are far less likely to churn.
+- **Monthly Charges** and **Total Charges** are both highly important; higher charges correlate with higher churn.
+- **Contract type** significantly impacts retention — month-to-month contracts have the highest churn risk.
+- The balanced-weight Logistic Regression model is the recommended choice for deployment due to its superior Recall on the minority class.
 
-👉 Model is better at predicting non-churn customers than churn customers.
+---
 
-## 🔍 Key Insights
-- Customers with higher total and monthly charges are more likely to churn
-- Longer tenure reduces churn probability
-- Contract type significantly impacts customer retention
+## Project Structure
+```
+├── main.py                 # End-to-end ML pipeline
+├── requirements.txt        # Pinned dependencies
+├── Telco-Customer-Churn.csv
+├── images/                 # Auto-generated plots
+│   ├── confusion_matrix_*.png
+│   ├── feature_importance.png
+│   ├── model_comparison.png
+│   └── roc_curves.png
+└── models/                 # Serialized pipelines
+    ├── logistic_regression_pipeline.pkl
+    └── random_forest_pipeline.pkl
+```
